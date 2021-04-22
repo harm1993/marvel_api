@@ -13,46 +13,30 @@
 </template>
 
 <script>
-import { public_key } from "../marvel";
-import { secret_key } from "../marvel";
-import axios from "axios";
-import md5 from "md5";
+import { mapState } from "vuex";
 
 export default {
   name: "Character",
 
   data() {
     return {
-      character: [],
       url: "",
       size: "standard_large.jpg",
     };
   },
-
   mounted() {
-    this.getCharacter();
+    this.$store.dispatch("getCharacter", this.$route.params.id);
+    this.getImage();
   },
-
+  computed: {
+    ...mapState({
+      character: (state) => state.character,
+      preUrl: (state) => state.url,
+    }),
+  },
   methods: {
-    getCharacter: function () {
-      const ts = Date.now();
-      const hash = md5(ts + secret_key + public_key);
-      var characterId = this.$route.params.id;
-      axios
-        .get(
-          `https://gateway.marvel.com/v1/public/characters/${characterId}?ts=${ts}&apikey=${public_key}&hash=${hash}`
-        )
-        .then((result) => {
-          console.log(result);
-
-          result.data.data.results.forEach((item) => {
-            this.character.push(item);
-
-            this.url = `${item.thumbnail.path}/${this.size}`;
-
-            console.log(this.url);
-          });
-        });
+    getImage: function () {
+      this.url = `${this.preUrl}${this.size}`;
     },
   },
 };
